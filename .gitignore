@@ -1,0 +1,30 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.egg-info/
+dist/
+build/
+.DS_Store
+
+# Large raw data files — download via setup_kaggle.py
+data/raw/*.csv
+
+# Generated output — recreated by running the pipeline
+data/cleaned/*.csv
+data/transformed/*.csv
+
+# Logs
+logs/*.log
+
+# Test cache
+.pytest_cache/
+
+# DB files
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
