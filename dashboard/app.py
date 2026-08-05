@@ -130,11 +130,15 @@ if not (DATA_DIR / "fact_sales.parquet").exists():
 def _read(name: str) -> pd.DataFrame:
     parquet = DATA_DIR / f"{name}.parquet"
     csv     = DATA_DIR / f"{name}.csv"
+    # Try parquet first, fall back to CSV (no pyarrow dependency needed)
     if parquet.exists():
-        return pd.read_parquet(parquet)
+        try:
+            return pd.read_parquet(parquet)
+        except Exception:
+            pass
     if csv.exists():
         return pd.read_csv(csv)
-    raise FileNotFoundError(f"Cannot find {name}.parquet or {name}.csv in {DATA_DIR}")
+    raise FileNotFoundError(f"Cannot find {name} in {DATA_DIR}")
 
 # ── Chart theme ───────────────────────────────────────────────────────────────
 CHART_THEME = dict(
