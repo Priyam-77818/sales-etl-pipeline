@@ -115,19 +115,26 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 """, unsafe_allow_html=True)
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
-ROOT        = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-# Use bundled parquet files (dashboard/data/) for cloud deployment
-# Falls back to data/transformed/ for local runs
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-if not os.path.exists(os.path.join(DATA_DIR, "fact_sales.parquet")):
-    DATA_DIR = os.path.join(ROOT, "data", "transformed")
+from pathlib import Path
 
-def _read(name):
-    parquet = os.path.join(DATA_DIR, f"{name}.parquet")
-    csv     = os.path.join(DATA_DIR, f"{name}.csv")
-    if os.path.exists(parquet):
+# On Streamlit Cloud, __file__ is the app.py inside dashboard/
+# dashboard/data/ holds the parquet files committed to the repo
+_HERE    = Path(__file__).resolve().parent          # dashboard/
+_ROOT    = _HERE.parent                             # project root
+DATA_DIR = _HERE / "data"                           # dashboard/data/
+
+# Fallback to data/transformed/ for local runs without parquet files
+if not (DATA_DIR / "fact_sales.parquet").exists():
+    DATA_DIR = _ROOT / "data" / "transformed"
+
+def _read(name: str) -> pd.DataFrame:
+    parquet = DATA_DIR / f"{name}.parquet"
+    csv     = DATA_DIR / f"{name}.csv"
+    if parquet.exists():
         return pd.read_parquet(parquet)
-    return pd.read_csv(csv)
+    if csv.exists():
+        return pd.read_csv(csv)
+    raise FileNotFoundError(f"Cannot find {name}.parquet or {name}.csv in {DATA_DIR}")
 
 # ── Chart theme ───────────────────────────────────────────────────────────────
 CHART_THEME = dict(
