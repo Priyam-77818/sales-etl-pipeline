@@ -15,6 +15,9 @@ data/raw/*.csv
 data/cleaned/*.csv
 data/transformed/*.csv
 
+# Dashboard bundled data IS committed (needed for Streamlit Cloud)
+# dashboard/data/ is intentionally NOT ignored
+
 # Logs
 logs/*.log
 

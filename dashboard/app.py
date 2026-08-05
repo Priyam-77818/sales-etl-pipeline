@@ -116,7 +116,18 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 ROOT        = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-TRANSFORMED = os.path.join(ROOT, "data", "transformed")
+# Use bundled parquet files (dashboard/data/) for cloud deployment
+# Falls back to data/transformed/ for local runs
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+if not os.path.exists(os.path.join(DATA_DIR, "fact_sales.parquet")):
+    DATA_DIR = os.path.join(ROOT, "data", "transformed")
+
+def _read(name):
+    parquet = os.path.join(DATA_DIR, f"{name}.parquet")
+    csv     = os.path.join(DATA_DIR, f"{name}.csv")
+    if os.path.exists(parquet):
+        return pd.read_parquet(parquet)
+    return pd.read_csv(csv)
 
 # ── Chart theme ───────────────────────────────────────────────────────────────
 CHART_THEME = dict(
@@ -139,11 +150,11 @@ COLORS = ["#4F8EF7","#22c55e","#a855f7","#f97316","#14b8a6","#ef4444","#eab308",
 # ── Load & cache data ─────────────────────────────────────────────────────────
 @st.cache_data(show_spinner="Loading data...")
 def load_data():
-    fact    = pd.read_csv(os.path.join(TRANSFORMED, "fact_sales.csv"))
-    d_cust  = pd.read_csv(os.path.join(TRANSFORMED, "dim_customer.csv"))
-    d_prod  = pd.read_csv(os.path.join(TRANSFORMED, "dim_product.csv"))
-    d_date  = pd.read_csv(os.path.join(TRANSFORMED, "dim_date.csv"))
-    d_sell  = pd.read_csv(os.path.join(TRANSFORMED, "dim_seller.csv"))
+    fact    = _read("fact_sales")
+    d_cust  = _read("dim_customer")
+    d_prod  = _read("dim_product")
+    d_date  = _read("dim_date")
+    d_sell  = _read("dim_seller")
 
     df = fact.copy()
     df = df.merge(d_cust[["customer_id","customer_state","customer_city"]], on="customer_id", how="left")
