@@ -124,10 +124,16 @@ CHART_THEME = dict(
     plot_bgcolor="#1e2130",
     font=dict(family="Inter", color="#8892a4", size=12),
     margin=dict(l=10, r=10, t=30, b=10),
-    xaxis=dict(gridcolor="#2d3045", zeroline=False, showline=False),
-    yaxis=dict(gridcolor="#2d3045", zeroline=False, showline=False),
-    legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color="#8892a4")),
 )
+# Applied separately via update_xaxes / update_yaxes to avoid duplicate key conflicts
+_AXIS_STYLE = dict(gridcolor="#2d3045", zeroline=False, showline=False)
+
+def styled(fig, height=300, **extra):
+    """Apply CHART_THEME + axis styles to any figure, with optional overrides."""
+    fig.update_layout(**{**CHART_THEME, **extra}, height=height)
+    fig.update_xaxes(**_AXIS_STYLE)
+    fig.update_yaxes(**_AXIS_STYLE)
+    return fig
 COLORS = ["#4F8EF7","#22c55e","#a855f7","#f97316","#14b8a6","#ef4444","#eab308","#06b6d4"]
 
 # ── Load & cache data ─────────────────────────────────────────────────────────
@@ -266,8 +272,8 @@ with tab1:
             name="Revenue",
             hovertemplate="<b>%{x}</b><br>Revenue: R$ %{y:,.0f}<extra></extra>",
         ))
-        fig.update_layout(**CHART_THEME, height=300)
-        fig.update_xaxis(tickangle=-45, tickfont=dict(size=10))
+        styled(fig, height=300)
+        fig.update_xaxes(tickangle=-45, tickfont=dict(size=10))
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     with c2:
@@ -284,8 +290,7 @@ with tab1:
         fig2.add_annotation(text=f"<b>{total_ord:,}</b><br><span style='font-size:10px'>orders</span>",
                             x=0.5, y=0.5, showarrow=False,
                             font=dict(size=14, color="white"), align="center")
-        fig2.update_layout(**CHART_THEME, height=300,
-                           legend=dict(orientation="h", y=-0.15, font=dict(size=11)))
+        styled(fig2, height=300, legend=dict(orientation="h", y=-0.15, font=dict(size=11)))
         st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
 
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
@@ -306,8 +311,7 @@ with tab1:
                       text=qdf["revenue"].apply(lambda x: f"R${x/1e6:.1f}M"))
         fig3.update_traces(textposition="outside", textfont_size=10,
                            hovertemplate="<b>%{x}</b><br>R$ %{y:,.0f}<extra></extra>")
-        fig3.update_layout(**CHART_THEME, height=280, coloraxis_showscale=False,
-                           uniformtext_minsize=8)
+        styled(fig3, height=280, coloraxis_showscale=False, uniformtext_minsize=8)
         st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar": False})
 
     with c4:
@@ -319,7 +323,7 @@ with tab1:
                       color="count", color_continuous_scale=["#1a3a6b","#a855f7"],
                       labels={"count":"Orders","type":""})
         fig4.update_traces(hovertemplate="<b>%{y}</b><br>Orders: %{x:,}<extra></extra>")
-        fig4.update_layout(**CHART_THEME, height=280, coloraxis_showscale=False)
+        styled(fig4, height=280, coloraxis_showscale=False)
         st.plotly_chart(fig4, use_container_width=True, config={"displayModeBar": False})
 
     with c5:
@@ -330,8 +334,7 @@ with tab1:
                              color_discrete_sequence=["#14b8a6"],
                              labels={"value":"Days","count":"Orders"})
         fig5.update_traces(hovertemplate="<b>%{x} days</b><br>Orders: %{y}<extra></extra>")
-        fig5.update_layout(**CHART_THEME, height=280, showlegend=False,
-                           xaxis_title="Days", yaxis_title="Orders")
+        styled(fig5, height=280, showlegend=False, xaxis_title="Days", yaxis_title="Orders")
         st.plotly_chart(fig5, use_container_width=True, config={"displayModeBar": False})
 
     # Row 3: Review scores
@@ -347,7 +350,7 @@ with tab1:
                       color_discrete_sequence=colors_rev,
                       labels={"x":"Score","y":"Count","color":"Score"})
         fig6.update_traces(hovertemplate="<b>⭐ %{x}</b><br>Count: %{y:,}<extra></extra>")
-        fig6.update_layout(**CHART_THEME, height=260, showlegend=False)
+        styled(fig6, height=260, showlegend=False)
         st.plotly_chart(fig6, use_container_width=True, config={"displayModeBar": False})
 
     with c7:
@@ -362,10 +365,9 @@ with tab1:
             hovertemplate="<b>%{x}</b><br>Growth: %{y:.1f}%<extra></extra>",
         ))
         fig7.add_hline(y=0, line_color="#4d5568", line_width=1)
-        fig7.update_layout(**CHART_THEME, height=260,
-                           xaxis=dict(tickangle=-45, tickfont=dict(size=9),
-                                      gridcolor="#2d3045"),
-                           yaxis=dict(ticksuffix="%", gridcolor="#2d3045"))
+        styled(fig7, height=260)
+        fig7.update_xaxes(tickangle=-45, tickfont=dict(size=9))
+        fig7.update_yaxes(ticksuffix="%")
         st.plotly_chart(fig7, use_container_width=True, config={"displayModeBar": False})
 
 # ═══════════════════════════════════════════════════════════
@@ -389,7 +391,7 @@ with tab2:
         fig.update_traces(
             hovertemplate="<b>%{y}</b><br>Revenue: R$ %{x:,.0f}<br>Orders: %{customdata[0]:,}<extra></extra>"
         )
-        fig.update_layout(**CHART_THEME, height=450, coloraxis_showscale=False)
+        styled(fig, height=450, coloraxis_showscale=False)
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     with c2:
@@ -407,8 +409,8 @@ with tab2:
         fig2.update_traces(
             hovertemplate="<b>%{y}</b><br>Late: %{x:.1f}%<extra></extra>"
         )
-        fig2.update_layout(**CHART_THEME, height=450, coloraxis_showscale=False,
-                           xaxis=dict(ticksuffix="%", gridcolor="#2d3045"))
+        styled(fig2, height=450, coloraxis_showscale=False)
+        fig2.update_xaxes(ticksuffix="%")
         st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
 
     # State summary table
@@ -453,7 +455,7 @@ with tab3:
         fig.update_traces(
             hovertemplate="<b>%{y}</b><br>Revenue: R$ %{x:,.0f}<br>Items: %{customdata[0]:,}<extra></extra>"
         )
-        fig.update_layout(**CHART_THEME, height=460, coloraxis_showscale=False)
+        styled(fig, height=460, coloraxis_showscale=False)
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     with c2:
@@ -475,8 +477,8 @@ with tab3:
         fig2.update_traces(
             hovertemplate="<b>%{y}</b><br>Avg: %{x:.2f} ⭐<extra></extra>"
         )
-        fig2.update_layout(**CHART_THEME, height=460, coloraxis_showscale=False,
-                           xaxis=dict(range=[1,5], gridcolor="#2d3045"))
+        styled(fig2, height=460, coloraxis_showscale=False)
+        fig2.update_xaxes(range=[1, 5])
         st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
 
     # Top products table
@@ -523,8 +525,7 @@ with tab4:
         fig.add_annotation(text=f"<b>{one_time+repeat:,}</b><br>total",
                            x=0.5, y=0.5, showarrow=False,
                            font=dict(size=13, color="white"), align="center")
-        fig.update_layout(**CHART_THEME, height=300,
-                          legend=dict(orientation="h", y=-0.1))
+        styled(fig, height=300, legend=dict(orientation="h", y=-0.1))
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     # CLV distribution
@@ -538,7 +539,7 @@ with tab4:
         fig2.update_traces(
             hovertemplate="<b>R$ %{x:.0f}</b><br>Customers: %{y}<extra></extra>"
         )
-        fig2.update_layout(**CHART_THEME, height=300, showlegend=False)
+        styled(fig2, height=300, showlegend=False)
         st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
 
     # Orders per customer
@@ -554,7 +555,7 @@ with tab4:
         fig3.update_traces(
             hovertemplate="<b>%{x} order(s)</b><br>Customers: %{y:,}<extra></extra>"
         )
-        fig3.update_layout(**CHART_THEME, height=300, coloraxis_showscale=False)
+        styled(fig3, height=300, coloraxis_showscale=False)
         st.plotly_chart(fig3, use_container_width=True, config={"displayModeBar": False})
 
     # Top customers table
